@@ -1,13 +1,127 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>typegolasimulator</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>TypeGolaSimulator</title>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- 인트로 -->
+<div id="intro">
+  <div id="intro-head"></div>
+  <div id="intro-body"></div>
+</div>
+
+<!-- 설정 패널 -->
+<div id="panel">
+  <div id="panel-inner">
+  <div class="panel-title">메뉴</div>
+  <div class="panel-main">
+  <div class="panel-subtitle">[설정]</div>
+
+  <div class="sec-title">-조작-</div>
+  <div class="sec-body">
+  <div class="switchbox-row">
+    <button class="arrow-btn arrow-left" id="modePrevBtn" aria-label="이전 조작 방식"></button>
+    <div class="switchbox-box" id="modeBox">기본</div>
+    <button class="arrow-btn arrow-right" id="modeNextBtn" aria-label="다음 조작 방식"></button>
+  </div>
+  <div class="desc-text" id="modeDesc">포인터 위치로 몸통이 이동합니다.</div>
+
+  <div class="sec-title">-인터페이스-</div>
+  <div class="toggle-row">
+    <span class="toggle-label" id="toastLabel">토스트 메시지 켜짐</span>
+    <div class="gg-switch" id="toastSwitch"><div class="knob"></div></div>
+  </div>
+  <div class="toggle-row">
+    <span class="toggle-label" id="uselessLabel">인생에 전혀 필요 없는 스위치</span>
+    <div class="gg-switch" id="uselessSwitch"><div class="knob"></div></div>
+  </div>
+
+  <div class="sec-title">-배경-</div>
+  <div class="color-preview" id="colorPreview"></div>
+  <div class="slider-row">
+    <span class="slider-letter r">R</span>
+    <div class="slider-track r" data-ch="0"><div class="fill" style="width:100%"></div><div class="handle" style="left:100%"></div></div>
+    <input class="slider-val" id="valR" value="1.0" maxlength="6" spellcheck="false">
+  </div>
+  <div class="slider-row">
+    <span class="slider-letter g">G</span>
+    <div class="slider-track g" data-ch="1"><div class="fill" style="width:100%"></div><div class="handle" style="left:100%"></div></div>
+    <input class="slider-val" id="valG" value="1.0" maxlength="6" spellcheck="false">
+  </div>
+  <div class="slider-row">
+    <span class="slider-letter b">B</span>
+    <div class="slider-track b" data-ch="2"><div class="fill" style="width:100%"></div><div class="handle" style="left:100%"></div></div>
+    <input class="slider-val" id="valB" value="1.0" maxlength="6" spellcheck="false">
+  </div>
+  <div class="hex-row">
+    <span class="hex-label">HEX</span>
+    <input class="hex-input" id="hexInput" value="#FFFFFF" maxlength="7" spellcheck="false" placeholder="Input">
+  </div>
+  </div>
+
+  <div class="sec-title">-볼륨-</div>
+  <div class="sec-body">
+  <div class="slider-row">
+    <span class="slider-letter vol">마스터</span>
+    <div class="slider-track vol" data-key="master"><div class="fill" style="width:100%"></div><div class="handle" style="left:100%"></div></div>
+    <span class="vol-val" id="vMaster">100%</span>
+  </div>
+  <div class="slider-row">
+    <span class="slider-letter vol">게임</span>
+    <div class="slider-track vol" data-key="game"><div class="fill" style="width:100%"></div><div class="handle" style="left:100%"></div></div>
+    <span class="vol-val" id="vGame">100%</span>
+  </div>
+  <div class="slider-row">
+    <span class="slider-letter vol">UI</span>
+    <div class="slider-track vol" data-key="ui"><div class="fill" style="width:100%"></div><div class="handle" style="left:100%"></div></div>
+    <span class="vol-val" id="vUi">100%</span>
+  </div>
+
+  <div class="toggle-row">
+    <span class="toggle-label" id="golaLabel">GolaGola할 때 소리 허용</span>
+    <div class="gg-switch" id="golaSwitch"><div class="knob"></div></div>
+  </div>
+  <div class="toggle-row">
+    <span class="toggle-label" id="pitchLabel">GolaGola 소리 배속 안함</span>
+    <div class="gg-switch" id="pitchSwitch"><div class="knob"></div></div>
+  </div>
+
+  </div>
+  <div class="panel-footer">
+    <button class="btn" id="modalOpenBtn">버전 정보</button>
+    <button class="btn" id="creditOpenBtn">크레딧 보기</button>
+  </div>
+  </div>
+</div>
+</div>
+
+<!-- 토스트 -->
+<div id="toasts"></div>
+
+<!-- 크레딧 -->
+<div id="credit">
+  <div id="credit-text"></div>
+</div>
+<div id="credit-hint" style="display:none">화면을 누르고 있으면 빠르게 넘깁니다.</div>
+
+<!-- 버전 정보 (원본 스타일, 풀스크린) -->
+<div id="modal">
+  <div id="modal-head">
+    <button class="modal-btn close" id="modalCloseBtn">×</button>
+    <div class="v-title">TypeGolaSimulator</div>
+    <div class="v-ver" id="vVer">V1.5.1</div>
+    <div class="v-dev" id="vDev">개발자 코멘트 : 마우스를 팔이 빠질 때까지 돌려보세요.</div>
+    <button class="modal-btn prev" id="modalPrevBtn">◀</button>
+    <button class="modal-btn next" id="modalNextBtn">▶</button>
+  </div>
+  <div id="modal-log" class="v-log"></div>
+  <div id="mobileTag"></div>
+</div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
 </html>

@@ -1,60 +1,34 @@
-import './style.css'
-import heroImg from './assets/hero.png'
-import typescriptLogo from './assets/typescript.svg'
-import viteLogo from './assets/vite.svg'
-import { setupCounter } from './counter.ts'
+// Wiring only (thin). Game logic lives in core/modes/render/audio/ui.
+import './style.css';
+import { initCanvas, resize } from './render/canvas';
+import { initSprites } from './render/sprites';
+import { initInput } from './core/input';
+import { startLoop } from './core/loop';
+import { initPanel } from './ui/panel';
+import { initModal } from './ui/modal';
+import { runIntro } from './ui/intro';
+import { loadSounds } from './audio/sounds';
+import { markSoundsRequested } from './audio/context';
+import { isMobile } from './core/state';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+const canvas = document.getElementById('game') as HTMLCanvasElement | null;
+if (!canvas) throw new Error('#game missing');
+initCanvas(canvas);
+window.addEventListener('resize', resize);
 
-<div class="ticks"></div>
+initInput();
+initPanel();
+initModal();
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+(document.getElementById('mobileTag') as HTMLElement).textContent = isMobile
+  ? '모바일 모드 : 켜짐'
+  : '모바일 모드 : 꺼짐'; // 감지 확인용 (버전 정보 우측 하단)
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+void initSprites(); // draw()가 준비될 때까지 대기 (imgsReady 게이트)
+if (!isMobile) {
+  markSoundsRequested();
+  void loadSounds();
+} // 모바일: 첫 제스처(터치/클릭)에서 AC 생성 — autoplay 경고 방지
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+startLoop();
+void runIntro();

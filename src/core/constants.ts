@@ -1,0 +1,37 @@
+// Sync source: original-like.html LIMITS (verbatim values).
+// Unity cross-check: gravity 9.81 (default), pointerR 20 (PointerPos),
+// fatBounce 0.85 (Fat.physicsMaterial2D).
+export const LIMITS = {
+  pointerR: 20,
+  fatLaunch: 200,
+  holdTime: 0.6887,
+  fatBounce: 0.85,
+  gravity: 9.81,
+  stopSpeed: 4,
+  springS: 200,
+  springD: 5,
+  lerp: 5,
+  rotFast: 360 * 1.5,
+  thatBoxSpring: 1.2,
+  thatBoxYaw: 360 * 1.0,
+  seizureInterval: 0.1,
+  seizureR: 2,
+  trailLife: 0.5,
+  trailAlpha: 0.45,
+  trailScale: 0.4,
+  soundStep: 0.05,
+  pitchMin: 0.1,
+  pitchMax: 3,
+  pitchMul: 1.4,
+  fatSize: 2.56,
+  mobileFatScale: 0.6,
+  toastH1: 55,
+  toastH2: 35,
+  toastMax: 3,
+  toastChars: 4,
+  toastDur: 3500,
+  toastKill: 300,
+  toastKillFast: 50,
+} as const;
+
+export const RAD = Math.PI / 180;
