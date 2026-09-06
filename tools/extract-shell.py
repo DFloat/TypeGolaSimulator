@@ -21,9 +21,9 @@ def main() -> None:
     with open(SRC, encoding="utf-8") as f:
         html = f.read()
 
-    m = re.search(r"<style>([\s\S]*?)</style>", html)
-    assert m, "style block not found"
-    css = m.group(1)
+    blocks = re.findall(r"<style>([\s\S]*?)</style>", html)
+    assert len(blocks) >= 2, f"expected 2+ style blocks, found {len(blocks)}"
+    css = "\n".join(blocks)
     css, n = re.subn(
         r"src: url\(data:font/woff2;base64,[A-Za-z0-9+/=]+\)",
         "src: url('/assets/d2coding-bold.woff2')",

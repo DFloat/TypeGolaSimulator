@@ -35,3 +35,14 @@ export const LIMITS = {
 } as const;
 
 export const RAD = Math.PI / 180;
+
+// Unity 실측값 (scene/project 설정에서 직접 확인).
+// LIMITS는 웹 싱크 기준(original-like.html) 기록용으로 보존하고,
+// 아래 값으로 실제 동작을 교정한다.
+export const UNITY = {
+  bodyFollowRate: 20, // GolaGolaBody.moveSpeed (Main.unity scene 값)
+  partsFollowRate: 1.5, // GolaGolaParts.MagneticSpeed (Main.unity scene 값)
+  rainbowCycleSec: 1, // BackgroundPreview: hue += deltaTime (1초/바퀴)
+  toastShowMs: 3000, // ToastUIData.ShowTime
+  toastMoveMs: 200, // ToastUIData.MoveDuration
+} as const;

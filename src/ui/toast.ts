@@ -1,5 +1,8 @@
-// Toast (원본 메커니즘 verbatim).
+// Toast (원본 ToastUI/ToastUIManager 메커니즘).
+// Scene 실측값: 첫스택 +55px/이후 +35px, 최대 3스택, 4자 제한, 16px,
+// 표시 3.0s, 이동/파괴 0.2s, 파괴 시 (-150, 0) 슬라이드.
 import { LIMITS } from '../core/constants';
+import { UNITY } from '../core/constants';
 import { save } from '../core/storage';
 
 function toastBox(): HTMLElement {
@@ -8,25 +11,51 @@ function toastBox(): HTMLElement {
   return el;
 }
 
+// 원본 CutText: maxChars까지 한 글자씩 절단 후 '...'를 한 점씩 추가 (전체 MoveDuration).
+function cutTextAnimated(el: HTMLElement, maxChars: number, durationMs: number): void {
+  const original = el.textContent ?? '';
+  if (original.length < maxChars) return;
+  const totalSteps = original.length - maxChars + 3;
+  const interval = durationMs / totalSteps;
+  let i = original.length;
+  const appendDots = (n: number): void => {
+    if (!el.isConnected) return;
+    el.textContent = `${original.slice(0, maxChars)}${'.'.repeat(n)}`;
+    if (n < 3) setTimeout(() => appendDots(n + 1), interval);
+  };
+  const tickDown = (): void => {
+    if (!el.isConnected) return;
+    if (i > maxChars) {
+      i--;
+      el.textContent = original.slice(0, i);
+      setTimeout(tickDown, interval);
+    } else appendDots(1);
+  };
+  tickDown();
+}
+
 export function toast(msg: string, color?: string): void {
   if (!save.ToastMessageAllow) return;
   const c = color ?? '#ffff00'; // 원본 토스트는 노란색
   if (!msg) return;
   const box = toastBox();
-  // 기존 토스트 스택 (원본: 첫 55px/이후 35px + 크기/폰트 축소 + 글자 4자 제한)
   const stack = [...box.children].filter(
     (t): t is HTMLElement =>
       t instanceof HTMLElement && t.classList.contains('toast') && !t.dataset.dying,
   );
   stack.forEach((t, i) => {
-    t.dataset.stacked = String(parseInt(t.dataset.stacked ?? '0', 10) + 1);
-    t.style.marginTop = `${+t.style.marginTop + (i === 0 ? LIMITS.toastH1 : LIMITS.toastH2)}px`;
-    t.style.fontSize = '16px';
-    t.style.padding = '0 10px';
-    if ((t.textContent?.length ?? 0) > LIMITS.toastChars) {
-      t.textContent = `${t.textContent?.slice(0, LIMITS.toastChars)}...`;
+    const n = parseInt(t.dataset.stacked ?? '0', 10) + 1;
+    t.dataset.stacked = String(n);
+    t.style.marginTop = `${(parseFloat(t.style.marginTop) || 0) + (i === 0 ? LIMITS.toastH1 : LIMITS.toastH2)}px`;
+    if (n === 1) {
+      // 첫 쌓임: 크기 축소 + 글자 애니메이션 절단
+      t.style.fontSize = '16px';
+      t.style.width = '110px';
+      t.style.height = '30px';
+      t.style.overflow = 'hidden';
+      cutTextAnimated(t, LIMITS.toastChars, UNITY.toastMoveMs);
     }
-    if (parseInt(t.dataset.stacked ?? '0', 10) >= LIMITS.toastMax) killToast(t, true);
+    if (n >= LIMITS.toastMax) killToast(t);
   });
   const el = document.createElement('div');
   el.className = 'toast';
@@ -34,13 +63,14 @@ export function toast(msg: string, color?: string): void {
   el.style.color = c;
   box.appendChild(el);
   void el.offsetWidth; // reflow 강제 → 초기(opacity 0) 상태 확정
-  el.classList.add('show'); // rAF 의존 제거 — 즉시 표시
-  setTimeout(() => killToast(el), LIMITS.toastDur);
+  el.classList.add('show');
+  setTimeout(() => killToast(el), UNITY.toastShowMs);
 }
 
-export function killToast(el: HTMLElement, immediate?: boolean): void {
+export function killToast(el: HTMLElement): void {
   if (el.dataset.dying) return;
   el.dataset.dying = '1';
   el.classList.remove('show');
-  setTimeout(() => el.remove(), immediate ? LIMITS.toastKillFast : LIMITS.toastKill);
+  el.classList.add('dying'); // 파괴: 페이드 + (-150, 0) 슬라이드 (0.2s)
+  setTimeout(() => el.remove(), UNITY.toastMoveMs);
 }

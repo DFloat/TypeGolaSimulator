@@ -225,22 +225,16 @@ export function toggleUseless(): void {
   if (uselessCount === 30) {
     label.textContent = 'GolaGola?';
     label.className = 'toggle-label';
+    let hue = 0; // 원본: hue += deltaTime (1초/바퀴)
     rainbowId = window.setInterval(() => {
-      const hue = (performance.now() / 20) % 360;
-      const [r, g, b] = hsl(hue, 1, 0.5);
+      hue = (hue + 0.05) % 1;
+      const [r, g, b] = hsl(hue * 360, 1, 0.5);
       setBg(r, g, b);
       label.style.color = `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`; // 원본 RainbowTMP
     }, 50);
     toast('GolaGola?', '#ffff00');
-  } else if (uselessCount === 40) {
-    label.textContent = '인생에 전혀 필요 없는 스위치';
-    label.className = 'toggle-label';
-    uselessCount = 0;
-    if (rainbowId) clearInterval(rainbowId);
-    rainbowId = null;
-    setBg(1, 1, 1);
-    label.style.color = '#fff';
   }
+  // NOTE: 원본 UselessSwitch에 40리셋 없음 (무지개 무한). 포크 창작이던 자동복원 제거.
   uiClick();
 }
 

@@ -1,5 +1,5 @@
 // 팔다리 (원본 GolaGolaParts.LookAtBody).
-import { LIMITS, RAD } from '../core/constants';
+import { RAD, UNITY } from '../core/constants';
 import { body, parts, pointer } from '../core/state';
 import type { PartsMode } from './types';
 
@@ -12,11 +12,11 @@ export function updateParts(dt: number, partsMode: PartsMode | undefined): void 
       p.x = m.x + p.ox;
       p.y = m.y + p.oy;
     } else if (partsMode === 'lerp') {
-      // 추적: Lerp
-      const t = Math.min(LIMITS.lerp * dt, 1);
+      // 추적: Unity Vector3.Lerp(current, target, dt * MagneticSpeed)
+      const t = Math.min(UNITY.partsFollowRate * dt, 1);
       p.x += (m.x + p.ox - p.x) * t;
       p.y += (m.y + p.oy - p.y) * t;
     }
-    p.rot = (Math.atan2(b.y - p.y, b.x - p.x) / RAD - 90); // 전 에이전트 lookAtBody
+    p.rot = Math.atan2(b.y - p.y, b.x - p.x) / RAD - 90; // 전 에이전트 lookAtBody
   });
 }
